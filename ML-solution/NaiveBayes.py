@@ -1,12 +1,41 @@
-# coding=utf-8
-from sklearn import datasets
+# encoding=utf-8
 
-iris = datasets.load_iris()
+# 读取数据
+from gensim.models import Word2Vec
+from gensim.models.word2vec import LineSentence
+
+sentences = LineSentence('C:\\workspace\\BulletAnalysis\\Corpus\\BosonNLP\\all.txt')
+
+model = Word2Vec(sentences, min_count=1, size=20)
+
+good_words = [line.strip().decode('utf-8') for line in
+              open('C:\\workspace\\BulletAnalysis\\Corpus\\BosonNLP\\good.txt').readlines()]
+bad_words = [line.strip().decode('utf-8') for line in
+             open('C:\\workspace\\BulletAnalysis\\Corpus\\BosonNLP\\bad.txt').readlines()]
+
+x_array = []
+y_array = []
+
+for item in good_words:
+    x_array.append(model[item])
+    y_array.append(1)
+
+for item in bad_words:
+    x_array.append(model[item])
+    y_array.append(0)
+
+# import warnings
+
+# 关闭报错
+# warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
+# from gensim.models import Word2Vec
 
 from sklearn.naive_bayes import GaussianNB
 
 clf = GaussianNB()
-clf = clf.fit(iris.data, iris.target)
-y_pred = clf.predict(iris.data)
+clf = clf.fit(x_array, y_array)
 
-print("高斯朴素贝叶斯，样本总数： %d 错误样本数 : %d" % (iris.data.shape[0], (iris.target != y_pred).sum()))
+# 分类结果测试
+y_pred = clf.predict(x_array)
+print("高斯朴素贝叶斯，样本总数： %d 错误样本数 : %d" % (len(x_array), (y_array != y_pred).sum()))
+
